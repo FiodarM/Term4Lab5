@@ -2,6 +2,7 @@ __author__ = 'fiodar'
 
 import numpy as np
 
+
 def tridiag_solve(diags, f):
 
     alpha, beta, gamma = diags
@@ -22,3 +23,16 @@ def tridiag_solve(diags, f):
 
     return x
 
+
+def linear_2nd_order(coefs, f, bounds, conditions, n):
+    p, q = coefs
+    qonditions_a, conditions_b = conditions
+    x = np.linspace(bounds[0], bounds[1], n)
+    h = (bounds[1] - bounds[0]) / float(n)
+    sub = 1 / h ** 2 - 0.5 * p(x) / h
+    main = q(x) - 2 / h ** 2
+    super = 1 / h ** 2 + 0.5 * p(x) / h
+
+    y = tridiag_solve((sub, main, super), f(x))
+
+    return
