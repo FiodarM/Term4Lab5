@@ -25,7 +25,7 @@ def tridiag_solve(diags, f, conditions):
     return x
 
 
-def linear_2nd_order(coefs, bounds, conditions, n=50, f=lambda x: 0 * x):
+def ode_linear_2nd_order(coefs, bounds, conditions, n=50, f=lambda x: 0 * x):
     p, q = coefs
     x = np.linspace(bounds[0], bounds[1], n)
     h = x[1] - x[0]
