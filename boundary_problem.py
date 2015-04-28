@@ -1,26 +1,26 @@
 __author__ = 'fiodar'
 
 import numpy as np
+from scipy.sparse.linalg import spsolve
+from scipy.sparse import spdiags
 
 
-def tridiag_solve(diags, f, conditions):
+def tridiag_solve(diags, f):
     a, b, c = diags
-    alpha, beta = conditions
     x = np.zeros_like(f)
     k, l = np.zeros_like(f[:-1]), np.zeros_like(f[:-1])
 
-    k[0] = (alpha[2] - c[0] / c[1] * f[1]) / (a[0] - (c[0] / c[1]) * a[1])
-    l[0] = (c[0] / c[1] - b[0]) / (a[0] - (c[0] / c[1]) * a[1])
+    k[0] = f[0] / b[0]
+    l[0] = -c[0] / b[0]
 
     for i in xrange(1, len(f) - 1):
         k[i] = (f[i] - a[i] * k[i - 1]) / (a[i] * l[i - 1] + b[i])
         l[i] = - c[i] / (a[i] * l[i - 1] + b[i])
 
-    x[-1] = (beta[2] - a[-1] * (k[-2] + l[-2] * k[-1]) - b[-1] * k[-1]) / \
-            (a[-1] * l[-2] * l[-1] + b[-1] * l[-1] + c[-1])
+    x[-1] = (f[-1] - a[-1] * k[-2]) / (a[-1] * l[-2] + b[-1])
 
-    for i in range(1, len(f))[::-1]:
-        x[i - 1] = k[i - 1] + l[i - 1] * x[i]
+    for i in range(0, len(f) - 1)[::-1]:
+        x[i] = k[i] + l[i] * x[i + 1]
 
     return x
 
@@ -40,6 +40,16 @@ def linear_2nd_order(coefs, bounds, conditions, n=50, f=lambda x: 0 * x):
     c = np.insert(c, 1, 1 / h * (1 / h + 0.5 * p(x[1:-1])))
     d = np.insert(d, 1, f(x[1:-1]))
 
-    y = tridiag_solve((a, b, c), d, conditions)
+    a[0] -= a[1] / c[1] * c[0]
+    b[0] -= b[1] / c[1] * c[0]
+    c[0] = 0.
+    d[0] -= d[1] / c[1] * c[0]
+
+    a[-1] -= 0.
+    b[-1] -= b[-2] / a[-2] * a[-1]
+    c[-1] = c[-2] / a[-2] * a[-1]
+    d[-1] -= d[-2] / a[-2] * a[-1]
+
+    y = tridiag_solve((a, b, c), d)
 
     return y
