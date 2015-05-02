@@ -38,15 +38,15 @@ def ode_linear_2nd_order(coefs, bounds, conditions, n=50, f=lambda x: 0 * x):
     c = np.insert(c, 1, 1 / h * (1 / h + 0.5 * p(x[1:-1])))
     d = np.insert(d, 1, f(x[1:-1]))
 
-    a[0] -= a[1] / c[1] * c[0]
-    b[0] -= b[1] / c[1] * c[0]
-    c[0] = 0.
-    d[0] -= d[1] / c[1] * c[0]
+    b[0] -= b[1] / a[1] * a[0]
+    c[0] -= c[1] / a[1] * a[0]
+    d[0] -= d[1] / a[1] * a[0]
+    np.delete(a, 0)
 
-    a[-1] -= 0.
-    b[-1] -= b[-2] / a[-2] * a[-1]
-    c[-1] = c[-2] / a[-2] * a[-1]
-    d[-1] -= d[-2] / a[-2] * a[-1]
+    a[-1] -= a[-2] / c[-2] * c[-1]
+    b[-1] -= b[-2] / c[-2] * c[-1]
+    d[-1] -= d[-2] / c[-2] * c[-1]
+    np.delete(c, -1)
 
     y = tridiag_solve((a, b, c), d)
 
